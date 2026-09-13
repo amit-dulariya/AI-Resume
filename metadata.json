@@ -1,0 +1,6 @@
+{
+  "name": "ResumeAI — AI Resume Builder & Analyzer",
+  "description": "Modern SaaS platform to build, analyze, preview, and match resumes with AI. Build a better resume, get noticed faster.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
