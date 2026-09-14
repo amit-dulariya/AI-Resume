@@ -16,6 +16,7 @@ import {
   Clock,
 } from 'lucide-react';
 import { mockUserSettings, mockResumes } from '../../data/mockData';
+import { logout } from '../../utils/auth';
 
 interface NavbarProps {
   onToggleMobileSidebar: () => void;
@@ -413,6 +414,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                 <div className="py-1">
                   <button
                     onClick={() => {
+                      logout();
                       setShowProfileMenu(false);
                       navigate('/login');
                     }}

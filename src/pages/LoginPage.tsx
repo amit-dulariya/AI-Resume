@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { Mail, Lock, ArrowRight, Eye, EyeOff } from 'lucide-react';
 import { Input } from '../components/common/Input';
 import { Button } from '../components/common/Button';
+import { authenticate } from '../utils/auth';
 
 export const LoginPage: React.FC = () => {
   const [email, setEmail] = useState('alex.wright@example.com');
@@ -14,10 +15,15 @@ export const LoginPage: React.FC = () => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    // Frontend foundation mock: quick login flow
+    // Frontend foundation mock: authenticate credentials without role selector
     setTimeout(() => {
       setIsLoading(false);
-      navigate('/dashboard');
+      const user = authenticate(email, password);
+      if (user.role === 'admin') {
+        navigate('/admin/dashboard');
+      } else {
+        navigate('/dashboard');
+      }
     }, 600);
   };
 

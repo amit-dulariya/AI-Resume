@@ -21,15 +21,15 @@ export const AppLayout: React.FC = () => {
   const meta = getPageMeta(location.pathname);
 
   return (
-    <div className="flex h-screen bg-slate-50 text-slate-900 overflow-hidden">
+    <div className="flex h-screen bg-slate-50 text-slate-900 overflow-hidden print:h-auto print:overflow-visible print:bg-white">
       {/* Desktop Sidebar */}
-      <div className="hidden md:block h-full">
+      <div className="hidden md:block h-full print:hidden">
         <Sidebar />
       </div>
 
       {/* Mobile Drawer Overlay */}
       {mobileSidebarOpen && (
-        <div className="fixed inset-0 z-40 md:hidden flex">
+        <div className="fixed inset-0 z-40 md:hidden flex print:hidden">
           <div
             className="fixed inset-0 bg-slate-900/40 backdrop-blur-xs"
             onClick={() => setMobileSidebarOpen(false)}
@@ -41,14 +41,16 @@ export const AppLayout: React.FC = () => {
       )}
 
       {/* Main Content Area */}
-      <div className="flex-1 flex flex-col min-w-0 h-full overflow-hidden">
-        <Navbar
-          onToggleMobileSidebar={() => setMobileSidebarOpen(!mobileSidebarOpen)}
-          title={meta.title}
-          subtitle={meta.subtitle}
-        />
-        <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8">
-          <div className="max-w-7xl mx-auto">
+      <div className="flex-1 flex flex-col min-w-0 h-full overflow-hidden print:h-auto print:overflow-visible">
+        <div className="print:hidden">
+          <Navbar
+            onToggleMobileSidebar={() => setMobileSidebarOpen(!mobileSidebarOpen)}
+            title={meta.title}
+            subtitle={meta.subtitle}
+          />
+        </div>
+        <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 print:p-0 print:overflow-visible print:h-auto">
+          <div className="max-w-7xl mx-auto print:max-w-none print:w-full">
             <Outlet />
           </div>
         </main>

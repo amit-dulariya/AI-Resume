@@ -17,6 +17,14 @@ import { ResumeAnalyzerPage } from './pages/ResumeAnalyzerPage';
 import { JobMatcherPage } from './pages/JobMatcherPage';
 import { ResumeHistoryPage } from './pages/ResumeHistoryPage';
 import { SettingsPage } from './pages/SettingsPage';
+import { AdminLayout } from './layouts/AdminLayout';
+import { AdminOverviewPage } from './pages/admin/AdminOverviewPage';
+import { AdminUsersPage } from './pages/admin/AdminUsersPage';
+import { AdminResumesPage } from './pages/admin/AdminResumesPage';
+import { AdminTemplatesPage } from './pages/admin/AdminTemplatesPage';
+import { AdminAnalyticsPage } from './pages/admin/AdminAnalyticsPage';
+import { AdminSettingsPage } from './pages/admin/AdminSettingsPage';
+import { AdminRoute } from './components/auth/AdminRoute';
 import { NotFoundPage } from './pages/NotFoundPage';
 
 export default function App() {
@@ -30,6 +38,19 @@ export default function App() {
         <Route element={<AuthLayout />}>
           <Route path="/login" element={<LoginPage />} />
           <Route path="/signup" element={<SignupPage />} />
+        </Route>
+
+        {/* Protected Admin Routes */}
+        <Route element={<AdminRoute />}>
+          <Route element={<AdminLayout />}>
+            <Route path="/admin" element={<Navigate to="/admin/dashboard" replace />} />
+            <Route path="/admin/dashboard" element={<AdminOverviewPage />} />
+            <Route path="/admin/users" element={<AdminUsersPage />} />
+            <Route path="/admin/resumes" element={<AdminResumesPage />} />
+            <Route path="/admin/templates" element={<AdminTemplatesPage />} />
+            <Route path="/admin/analytics" element={<AdminAnalyticsPage />} />
+            <Route path="/admin/settings" element={<AdminSettingsPage />} />
+          </Route>
         </Route>
 
         {/* Dashboard & Workspace App Pages */}

@@ -10,27 +10,63 @@
 }
 
 @media print {
-  body * {
-    visibility: hidden;
+  /* Hide application shell navigation, sidebars, headers, buttons, and search inputs */
+  aside,
+  nav,
+  header,
+  button,
+  input,
+  .print-hidden,
+  .print\:hidden {
+    display: none !important;
   }
+
+  /* Reset layout constraints for natural multi-page document flow */
+  html,
+  body,
+  #root,
+  .h-screen,
+  .overflow-hidden,
+  .overflow-y-auto,
+  main {
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    overflow: visible !important;
+    position: static !important;
+    background: #ffffff !important;
+    color: #0f172a !important;
+  }
+
+  /* Resume Builder specific preview sheet */
   #resume-a4-preview-sheet,
-  #resume-a4-preview-sheet * {
-    visibility: visible;
-  }
-  #resume-a4-preview-sheet {
-    position: absolute;
-    left: 0;
-    top: 0;
-    width: 100% !important;
-    max-width: 100% !important;
-    transform: none !important;
+  #resume-a4-modal-sheet {
     box-shadow: none !important;
     border: none !important;
-    margin: 0 !important;
-    padding: 24px !important;
+    margin: 0 auto !important;
+    padding: 0 !important;
   }
+
+  /* AI Resume Analyzer Printable Report */
+  #analyzer-printable-report {
+    display: block !important;
+    visibility: visible !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    background: #ffffff !important;
+    color: #0f172a !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+
+  /* Keep printed cards intact across page breaks where possible */
+  .print-avoid-break {
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+  }
+
   @page {
-    size: A4;
-    margin: 10mm;
+    size: auto;
+    margin: 12mm 14mm;
   }
 }

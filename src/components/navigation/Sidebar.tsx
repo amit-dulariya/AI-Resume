@@ -13,6 +13,7 @@ import {
   LogOut,
 } from 'lucide-react';
 import { cn } from '../../utils/cn';
+import { logout } from '../../utils/auth';
 
 interface SidebarProps {
   onCloseMobile?: () => void;
@@ -32,6 +33,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ onCloseMobile }) => {
   ];
 
   const handleLogout = () => {
+    logout();
     if (onCloseMobile) onCloseMobile();
     navigate('/login');
   };
