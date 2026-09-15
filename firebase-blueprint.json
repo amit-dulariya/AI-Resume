@@ -1,0 +1,106 @@
+{
+  "entities": {
+    "User": {
+      "title": "User",
+      "description": "User profile with authentication and role state",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string", "description": "Firebase Auth unique identifier" },
+        "name": { "type": "string", "description": "Full display name" },
+        "email": { "type": "string", "format": "email", "description": "Email address" },
+        "photoURL": { "type": "string", "description": "User profile image URL" },
+        "role": { "type": "string", "enum": ["user", "admin"], "description": "User authorization role" },
+        "createdAt": { "type": "string", "description": "ISO creation timestamp" },
+        "lastLogin": { "type": "string", "description": "ISO last login timestamp" }
+      },
+      "required": ["uid", "email", "name", "role", "createdAt", "lastLogin"]
+    },
+    "Resume": {
+      "title": "Resume",
+      "description": "User resume document containing full content tree and meta",
+      "type": "object",
+      "properties": {
+        "resumeId": { "type": "string", "description": "Unique resume identifier" },
+        "userId": { "type": "string", "description": "Owner user UID" },
+        "title": { "type": "string", "description": "Resume document title" },
+        "templateId": { "type": "string", "description": "Selected layout template key" },
+        "resumeData": { "type": "object", "description": "Structured resume sections, personal info, experience, education, skills, projects" },
+        "createdAt": { "type": "string", "description": "Creation timestamp" },
+        "updatedAt": { "type": "string", "description": "Last update timestamp" }
+      },
+      "required": ["resumeId", "userId", "title", "templateId", "resumeData", "createdAt", "updatedAt"]
+    },
+    "ResumeAnalysis": {
+      "title": "ResumeAnalysis",
+      "description": "Comprehensive ATS and AI resume evaluation result",
+      "type": "object",
+      "properties": {
+        "analysisId": { "type": "string", "description": "Unique analysis record identifier" },
+        "userId": { "type": "string", "description": "Owner user UID" },
+        "resumeId": { "type": "string", "description": "Associated resume ID" },
+        "overallScore": { "type": "number", "description": "Overall score 0-100" },
+        "atsScore": { "type": "number", "description": "ATS compatibility score 0-100" },
+        "skillsDetected": { "type": "array", "items": { "type": "string" }, "description": "Detected skills list" },
+        "missingSkills": { "type": "array", "items": { "type": "string" }, "description": "High-priority missing skills" },
+        "strengths": { "type": "array", "items": { "type": "string" }, "description": "Evaluated resume strengths" },
+        "weaknesses": { "type": "array", "items": { "type": "string" }, "description": "Areas for improvement" },
+        "formattingIssues": { "type": "array", "items": { "type": "string" }, "description": "Formatting and layout audit items" },
+        "contentSuggestions": { "type": "array", "items": { "type": "string" }, "description": "Bullet rewrites and suggestions" },
+        "keywords": { "type": "array", "items": { "type": "string" }, "description": "Recommended ATS keywords" },
+        "createdAt": { "type": "string", "description": "Analysis generation timestamp" }
+      },
+      "required": ["analysisId", "userId", "overallScore", "atsScore", "createdAt"]
+    },
+    "ActivityHistory": {
+      "title": "ActivityHistory",
+      "description": "User event and activity audit log",
+      "type": "object",
+      "properties": {
+        "activityId": { "type": "string", "description": "Unique activity log identifier" },
+        "userId": { "type": "string", "description": "Owner user UID" },
+        "type": { "type": "string", "description": "Activity action type" },
+        "description": { "type": "string", "description": "Human-readable description" },
+        "createdAt": { "type": "string", "description": "Timestamp of activity" }
+      },
+      "required": ["activityId", "userId", "type", "description", "createdAt"]
+    },
+    "Template": {
+      "title": "Template",
+      "description": "ATS resume design template catalog item",
+      "type": "object",
+      "properties": {
+        "templateId": { "type": "string", "description": "Unique template identifier" },
+        "name": { "type": "string", "description": "Display name of the template" },
+        "description": { "type": "string", "description": "Template description" },
+        "previewImage": { "type": "string", "description": "Preview thumbnail identifier or URL" },
+        "category": { "type": "string", "description": "Template category" },
+        "templateData": { "type": "object", "description": "Template styling and configuration" },
+        "createdAt": { "type": "string", "description": "Creation timestamp" },
+        "updatedAt": { "type": "string", "description": "Last updated timestamp" }
+      },
+      "required": ["templateId", "name", "category", "createdAt", "updatedAt"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": { "$ref": "User" },
+      "description": "User documents keyed by Firebase Auth UID"
+    },
+    "/resumes/{resumeId}": {
+      "schema": { "$ref": "Resume" },
+      "description": "User created and managed resumes"
+    },
+    "/resumeAnalyses/{analysisId}": {
+      "schema": { "$ref": "ResumeAnalysis" },
+      "description": "Historical AI resume analyses and ATS scores"
+    },
+    "/activityHistory/{activityId}": {
+      "schema": { "$ref": "ActivityHistory" },
+      "description": "Chronological audit and activity logs"
+    },
+    "/templates/{templateId}": {
+      "schema": { "$ref": "Template" },
+      "description": "Available resume templates manageable by admin"
+    }
+  }
+}

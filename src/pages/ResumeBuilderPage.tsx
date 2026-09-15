@@ -38,6 +38,8 @@ import { Input } from '../components/common/Input';
 import { Badge } from '../components/common/Badge';
 import { mockResumes, mockTemplates } from '../data/mockData';
 import { Resume, ResumeContent, PersonalInfo } from '../types/resume';
+import { saveResumeToFirestore } from '../lib/firestoreService';
+import { getStoredUser } from '../utils/auth';
 import { ResumeLivePreview } from '../components/builder/ResumeLivePreview';
 import { SectionAccordion } from '../components/builder/SectionAccordion';
 import { ExperienceSection } from '../components/builder/ExperienceSection';
@@ -124,22 +126,28 @@ export const ResumeBuilderPage: React.FC = () => {
   const [summaryGenModalOpen, setSummaryGenModalOpen] = useState(false);
 
   const editorContainerRef = useRef<HTMLDivElement>(null);
+  const user = getStoredUser();
 
-  // Autosave to localStorage on resume change
+  // Autosave to localStorage and Firestore on resume change
   useEffect(() => {
     setSaveStatus('saving');
     const timer = setTimeout(() => {
       try {
         localStorage.setItem(storageKey, JSON.stringify(resume));
+        if (user?.id) {
+          saveResumeToFirestore(resume, user.id).catch((err) => {
+            console.warn('Firestore autosave note:', err);
+          });
+        }
         setSaveStatus('saved');
       } catch (err) {
         console.warn('Autosave error', err);
         setSaveStatus('saved');
       }
-    }, 600);
+    }, 800);
 
     return () => clearTimeout(timer);
-  }, [resume, storageKey]);
+  }, [resume, storageKey, user?.id]);
 
   // If query string specifies a templateParam, ensure template is switched while preserving content
   useEffect(() => {
@@ -586,7 +594,7 @@ export const ResumeBuilderPage: React.FC = () => {
                   label="Full Name"
                   value={resume.content.personalInfo.fullName}
                   onChange={(e) => handlePersonalInfoChange('fullName', e.target.value)}
-                  placeholder="e.g. Alexander Wright"
+                  placeholder="e.g. Alex Morgan"
                 />
                 <Input
                   label="Professional Title"

@@ -26,11 +26,13 @@ import { AdminAnalyticsPage } from './pages/admin/AdminAnalyticsPage';
 import { AdminSettingsPage } from './pages/admin/AdminSettingsPage';
 import { AdminRoute } from './components/auth/AdminRoute';
 import { NotFoundPage } from './pages/NotFoundPage';
+import { AuthProvider } from './context/AuthContext';
 
 export default function App() {
   return (
     <BrowserRouter>
-      <Routes>
+      <AuthProvider>
+        <Routes>
         {/* Public Landing Page */}
         <Route path="/" element={<LandingPage />} />
 
@@ -50,6 +52,7 @@ export default function App() {
             <Route path="/admin/templates" element={<AdminTemplatesPage />} />
             <Route path="/admin/analytics" element={<AdminAnalyticsPage />} />
             <Route path="/admin/settings" element={<AdminSettingsPage />} />
+            <Route path="/admin/*" element={<Navigate to="/admin/dashboard" replace />} />
           </Route>
         </Route>
 
@@ -67,6 +70,7 @@ export default function App() {
         {/* Catch-all 404 */}
         <Route path="*" element={<NotFoundPage />} />
       </Routes>
+      </AuthProvider>
     </BrowserRouter>
   );
 }

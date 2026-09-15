@@ -13,7 +13,7 @@ import {
   LogOut,
 } from 'lucide-react';
 import { cn } from '../../utils/cn';
-import { logout } from '../../utils/auth';
+import { useAuth } from '../../context/AuthContext';
 
 interface SidebarProps {
   onCloseMobile?: () => void;
@@ -21,6 +21,7 @@ interface SidebarProps {
 
 export const Sidebar: React.FC<SidebarProps> = ({ onCloseMobile }) => {
   const navigate = useNavigate();
+  const { logout } = useAuth();
 
   const mainNavItems = [
     { label: 'Dashboard', to: '/dashboard', icon: LayoutDashboard },
@@ -32,8 +33,8 @@ export const Sidebar: React.FC<SidebarProps> = ({ onCloseMobile }) => {
     { label: 'History', to: '/history', icon: History },
   ];
 
-  const handleLogout = () => {
-    logout();
+  const handleLogout = async () => {
+    await logout();
     if (onCloseMobile) onCloseMobile();
     navigate('/login');
   };

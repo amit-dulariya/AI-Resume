@@ -231,10 +231,10 @@ export const HeroResumeVisual: React.FC = () => {
             <div className="bg-white rounded-lg p-5 border border-slate-200/90 shadow-xs space-y-3.5 text-slate-800">
               <div className="border-b border-slate-100 pb-2.5 flex justify-between items-start">
                 <div>
-                  <h4 className="text-sm font-bold text-slate-900 tracking-tight">Alexander Wright</h4>
+                  <h4 className="text-sm font-bold text-slate-900 tracking-tight">Alex Morgan</h4>
                   <p className="text-indigo-600 font-semibold text-xs">Senior Full Stack Engineer</p>
                   <p className="text-[10px] text-slate-400 mt-0.5">
-                    San Francisco, CA · alex.wright@example.com · linkedin.com/in/alexwright
+                    San Francisco, CA · alex.morgan@example.com · linkedin.com/in/alexmorgan
                   </p>
                 </div>
                 <Badge variant="neutral" size="sm">Template: Modern Tech</Badge>

@@ -1,9 +1,20 @@
-import { ComprehensiveAnalysisResult, SkillItem, MissingSkillItem, ResumeStrength, ResumeWeakness, FormattingCheckItem, ContentImprovementSuggestion, KeywordSuggestionItem } from '../data/analyzerMockData';
+import {
+  ComprehensiveAnalysisResult,
+  SkillItem,
+  MissingSkillItem,
+  ResumeStrength,
+  ResumeWeakness,
+  FormattingCheckItem,
+  ContentImprovementSuggestion,
+  KeywordSuggestionItem,
+  CompanySpecificAnalysis,
+} from '../data/analyzerMockData';
 
 interface GenerateLocalAtsParams {
   fileName?: string;
   resumeText: string;
   targetRole?: string;
+  companyName?: string;
   fileSize?: number;
   formattedSize?: string;
 }
@@ -347,6 +358,353 @@ export function generateLocalAtsAnalysis(params: GenerateLocalAtsParams): Compre
     },
   ];
 
+  // Company-specific Evaluation Engine
+  let companyAnalysis: CompanySpecificAnalysis | undefined = undefined;
+
+  if (params.companyName && params.companyName.trim().length > 0) {
+    const rawCompany = params.companyName.trim();
+    const compLower = rawCompany.toLowerCase();
+
+    // Map company profiles
+    let expectedSkills: CompanySpecificAnalysis['expectedSkills'] = [];
+    let importantKeywords: CompanySpecificAnalysis['importantKeywords'] = [];
+    let companyStrengths: string[] = [];
+    let companyWeaknesses: string[] = [];
+    let recommendedProjectsAndCertifications: CompanySpecificAnalysis['recommendedProjectsAndCertifications'] = [];
+    let improvementSuggestions: string[] = [];
+    let scoreModifier = 0;
+
+    if (compLower.includes('google')) {
+      expectedSkills = [
+        { name: 'Distributed Systems & Concurrency', category: 'Architecture', importance: 'Core Expectation' },
+        { name: 'Algorithms & Data Structures (LeetCode Hard/Medium)', category: 'Core CS', importance: 'Core Expectation' },
+        { name: 'Go / C++ / Python / Java', category: 'Languages', importance: 'Core Expectation' },
+        { name: 'Google Cloud Platform (GCP / BigQuery)', category: 'Cloud', importance: 'Preferred' },
+        { name: 'System Design at Billions QPS', category: 'Design', importance: 'Core Expectation' },
+        { name: 'Rigorous Automated Testing & CI/CD', category: 'DevOps', importance: 'Preferred' },
+        { name: 'High-Throughput Microservices & gRPC', category: 'Backend', importance: 'Bonus' },
+      ];
+      importantKeywords = [
+        { keyword: 'Large-scale', matched: /large[- ]scale/i.test(resumeText), importance: 'High' },
+        { keyword: 'Distributed Systems', matched: /distributed\s+systems/i.test(resumeText), importance: 'High' },
+        { keyword: 'Low Latency', matched: /low[- ]latency|latency/i.test(resumeText), importance: 'High' },
+        { keyword: 'GCP / Cloud', matched: /gcp|google\s+cloud|cloud/i.test(resumeText), importance: 'High' },
+        { keyword: 'Microservices', matched: /microservices/i.test(resumeText), importance: 'Medium' },
+        { keyword: 'System Design', matched: /system\s+design/i.test(resumeText), importance: 'High' },
+      ];
+      companyStrengths = [
+        'Demonstrates understanding of high-throughput architectural trade-offs.',
+        'Clear problem-solving orientation and technical depth in engineering descriptions.',
+        'Clean, single-column formatting compatible with Google engineering recruiters.',
+      ];
+      companyWeaknesses = [
+        'Could highlight more large-scale throughput metrics (e.g., QPS, petabytes, latency reductions in ms).',
+        'Could emphasize foundational data structures and algorithm optimization wins.',
+      ];
+      recommendedProjectsAndCertifications = [
+        {
+          type: 'project',
+          title: 'Distributed Consensus or Key-Value Store',
+          description: 'Build a Raft or Paxos distributed store in Go/Rust with replication and snapshotting.',
+          expectedImpact: 'Strong signal for Google L4/L5 Systems & Infrastructure teams.',
+        },
+        {
+          type: 'certification',
+          title: 'Google Cloud Professional Cloud Architect',
+          description: 'Validates enterprise architectural mastery on Google Cloud infrastructure.',
+          expectedImpact: 'Immediate differentiator for Cloud and Solutions roles at Google.',
+        },
+      ];
+      improvementSuggestions = [
+        'Quantify engineering outcomes with exact latency reductions (e.g., "Reduced p99 latency from 140ms to 28ms").',
+        'Explicitly state system design scope: cluster sizes, database sharding strategies, and failover mechanisms.',
+        'Highlight experience with open-source contributions or peer-reviewed design documents.',
+      ];
+      scoreModifier = /distributed|latency|algorithms|scale/i.test(resumeText) ? 2 : -4;
+    } else if (compLower.includes('amazon')) {
+      expectedSkills = [
+        { name: 'Amazon Web Services (AWS - Lambda, ECS, DynamoDB)', category: 'Cloud', importance: 'Core Expectation' },
+        { name: 'High-Availability Microservices (99.99%)', category: 'Backend', importance: 'Core Expectation' },
+        { name: 'Java / Python / TypeScript', category: 'Languages', importance: 'Core Expectation' },
+        { name: 'Decoupled Event-Driven Systems (SQS/SNS/Kafka)', category: 'Architecture', importance: 'Preferred' },
+        { name: 'Customer Obsession & Operational Excellence', category: 'Leadership Principles', importance: 'Core Expectation' },
+        { name: 'DevOps & Infrastructure as Code (Terraform/CDK)', category: 'DevOps', importance: 'Preferred' },
+      ];
+      importantKeywords = [
+        { keyword: 'AWS', matched: /aws|amazon\s+web\s+services/i.test(resumeText), importance: 'High' },
+        { keyword: 'Customer Impact', matched: /customer|client|user\s+experience/i.test(resumeText), importance: 'High' },
+        { keyword: 'High Availability', matched: /high\s+availability|uptime|resilien/i.test(resumeText), importance: 'High' },
+        { keyword: 'Microservices', matched: /microservices/i.test(resumeText), importance: 'High' },
+        { keyword: 'Operational Excellence', matched: /devops|ci\/cd|monitor|observab/i.test(resumeText), importance: 'Medium' },
+      ];
+      companyStrengths = [
+        'Strong alignment with customer outcomes and revenue delivery metrics.',
+        'Demonstrates operational ownership across production deployments.',
+      ];
+      companyWeaknesses = [
+        'Amazon recruiters look for clear STAR stories matching Leadership Principles (Ownership, Bias for Action).',
+        'Could include more specific AWS service names (e.g., DynamoDB, SQS, S3, CDK) instead of generic "cloud".',
+      ];
+      recommendedProjectsAndCertifications = [
+        {
+          type: 'certification',
+          title: 'AWS Certified Solutions Architect – Associate or Professional',
+          description: 'Gold standard certification recognized across all Amazon technical hiring loops.',
+          expectedImpact: 'High-priority credential for AWS, Retail, and Prime engineering tracks.',
+        },
+        {
+          type: 'project',
+          title: 'Serverless Event-Driven Pipeline using AWS CDK',
+          description: 'Deploy an automated event processing pipeline using API Gateway, Lambda, EventBridge, and DynamoDB.',
+          expectedImpact: 'Demonstrates Day-1 readiness for Amazon production standards.',
+        },
+      ];
+      improvementSuggestions = [
+        'Structure bullet points using the Amazon STAR method: Situation, Task, Action, and Quantified Result.',
+        'Emphasize "Frugality" and "Bias for Action" by noting cost-saving migrations or fast turnaround initiatives.',
+        'Add specific AWS service primitives wherever cloud infrastructure is mentioned.',
+      ];
+      scoreModifier = /aws|amazon|dynamodb|lambda/i.test(resumeText) ? 3 : -3;
+    } else if (compLower.includes('microsoft')) {
+      expectedSkills = [
+        { name: 'TypeScript / C# / .NET Core / Python', category: 'Languages', importance: 'Core Expectation' },
+        { name: 'Microsoft Azure & Cloud Native Services', category: 'Cloud', importance: 'Core Expectation' },
+        { name: 'Enterprise SaaS & Secure Multitenancy', category: 'Architecture', importance: 'Preferred' },
+        { name: 'CI/CD with GitHub Actions & Azure DevOps', category: 'DevOps', importance: 'Core Expectation' },
+        { name: 'SQL Server / Cosmos DB / PostgreSQL', category: 'Databases', importance: 'Preferred' },
+        { name: 'Cross-Functional Collaboration & Growth Mindset', category: 'Culture', importance: 'Core Expectation' },
+      ];
+      importantKeywords = [
+        { keyword: 'Azure', matched: /azure/i.test(resumeText), importance: 'High' },
+        { keyword: 'Enterprise', matched: /enterprise|b2b/i.test(resumeText), importance: 'High' },
+        { keyword: 'GitHub Actions / DevOps', matched: /github|devops|ci\/cd/i.test(resumeText), importance: 'High' },
+        { keyword: 'TypeScript / C#', matched: /typescript|c#|\.net/i.test(resumeText), importance: 'High' },
+        { keyword: 'Security & Compliance', matched: /security|compliance|soc2|rbac/i.test(resumeText), importance: 'Medium' },
+      ];
+      companyStrengths = [
+        'Solid engineering fundamentals with strong emphasis on maintainable software.',
+        'Collaborative tone and evidence of cross-team coordination.',
+      ];
+      companyWeaknesses = [
+        'Could highlight more enterprise compliance, accessibility (WCAG), or security patterns.',
+        'Azure familiarity could be more explicitly stated alongside cloud competencies.',
+      ];
+      recommendedProjectsAndCertifications = [
+        {
+          type: 'certification',
+          title: 'Microsoft Certified: Azure Solutions Architect Expert (AZ-305)',
+          description: 'Validates advanced expertise in compute, network, storage, and security on Azure.',
+          expectedImpact: 'Strong signal for Microsoft Azure and Enterprise Software divisions.',
+        },
+        {
+          type: 'project',
+          title: 'Full-Stack Enterprise Portal with Azure AD / MSAL Authentication',
+          description: 'Build a secure multitenant enterprise SaaS with role-based access control and Azure Cosmos DB.',
+          expectedImpact: 'Directly mirrors Microsoft 365 and Azure portal architectural patterns.',
+        },
+      ];
+      improvementSuggestions = [
+        'Highlight experience with Microsoft ecosystem tools (Azure, GitHub, VS Code extensions).',
+        'Showcase compliance, telemetry, and accessibility standards implemented in past projects.',
+        'Frame achievements with a "Growth Mindset" narrative emphasizing continuous learning and mentorship.',
+      ];
+      scoreModifier = /azure|c#|\.net|typescript|microsoft/i.test(resumeText) ? 3 : -2;
+    } else if (compLower.includes('meta')) {
+      expectedSkills = [
+        { name: 'React / React Native / Modern Web Core', category: 'Frontend', importance: 'Core Expectation' },
+        { name: 'GraphQL & Relay / Modern API Design', category: 'Architecture', importance: 'Core Expectation' },
+        { name: 'Python / C++ / Hack / Node.js', category: 'Languages', importance: 'Preferred' },
+        { name: 'Web Performance & Sub-100ms Interactions', category: 'Optimization', importance: 'Core Expectation' },
+        { name: 'End-to-End Product Ownership & Fast Shipping', category: 'Product', importance: 'Core Expectation' },
+        { name: 'Distributed Caching & High-Concurrency APIs', category: 'Backend', importance: 'Preferred' },
+      ];
+      importantKeywords = [
+        { keyword: 'React', matched: /react/i.test(resumeText), importance: 'High' },
+        { keyword: 'GraphQL', matched: /graphql/i.test(resumeText), importance: 'High' },
+        { keyword: 'Performance', matched: /performance|latency|vitals|speed/i.test(resumeText), importance: 'High' },
+        { keyword: 'Product Impact', matched: /users|dau|mau|growth|conversion/i.test(resumeText), importance: 'High' },
+        { keyword: 'End-to-End Ownership', matched: /spearheaded|launched|led|owned/i.test(resumeText), importance: 'Medium' },
+      ];
+      companyStrengths = [
+        'Shows product intuition and clear user-facing impact.',
+        'Solid modern JavaScript/TypeScript and component-driven architecture.',
+      ];
+      companyWeaknesses = [
+        'Meta values rapid iteration and deep metrics (DAU, MAU, conversion, retention). Need more product metrics.',
+        'Could demonstrate deeper understanding of client-side performance and state management at scale.',
+      ];
+      recommendedProjectsAndCertifications = [
+        {
+          type: 'project',
+          title: 'Real-Time Collaborative Canvas or Social Feed with Optimistic UI',
+          description: 'Build an ultra-responsive social feed with GraphQL subscriptions, virtualized lists, and offline cache.',
+          expectedImpact: 'Demonstrates the exact frontend engineering bar sought by Meta Product teams.',
+        },
+        {
+          type: 'skill',
+          title: 'Advanced Web Vitals & Real-Time Telemetry',
+          description: 'Master Core Web Vitals (INP, LCP, CLS) and real-time client-side tracing.',
+          expectedImpact: 'Directly addresses Meta frontend and full-stack interview expectations.',
+        },
+      ];
+      improvementSuggestions = [
+        'State user scale numbers: "Supported 250k+ daily active users with 99.9% crash-free sessions."',
+        'Demonstrate rapid shipping cadence and A/B test experimentation results.',
+        'Mention GraphQL, component design systems, or client-side caching strategies.',
+      ];
+      scoreModifier = /react|graphql|performance|users/i.test(resumeText) ? 3 : -2;
+    } else if (compLower.includes('infosys') || compLower.includes('tcs') || compLower.includes('wipro') || compLower.includes('accenture')) {
+      const companyDisplayName = compLower.includes('infosys')
+        ? 'Infosys'
+        : compLower.includes('tcs')
+        ? 'TCS'
+        : compLower.includes('wipro')
+        ? 'Wipro'
+        : 'Accenture';
+
+      expectedSkills = [
+        { name: 'Java / Spring Boot or Full Stack (React/Node.js)', category: 'Core Tech', importance: 'Core Expectation' },
+        { name: 'Cloud Migration & Modernization (AWS / Azure)', category: 'Cloud', importance: 'Core Expectation' },
+        { name: 'Enterprise Agile / Scrum & SDLC Delivery', category: 'Process', importance: 'Core Expectation' },
+        { name: 'Relational Databases (Oracle / PostgreSQL / SQL)', category: 'Databases', importance: 'Core Expectation' },
+        { name: 'Automated Testing (JUnit / Selenium / Mockito)', category: 'QA', importance: 'Preferred' },
+        { name: 'Client Communication & Stakeholder Delivery', category: 'Consulting', importance: 'Preferred' },
+      ];
+      importantKeywords = [
+        { keyword: 'Enterprise Solutions', matched: /enterprise|client|business/i.test(resumeText), importance: 'High' },
+        { keyword: 'Cloud (AWS/Azure)', matched: /aws|azure|cloud/i.test(resumeText), importance: 'High' },
+        { keyword: 'Agile / Scrum', matched: /agile|scrum|sprint/i.test(resumeText), importance: 'High' },
+        { keyword: 'Full Lifecycle / SDLC', matched: /lifecycle|sdlc|end-to-end/i.test(resumeText), importance: 'Medium' },
+        { keyword: 'Quality & Testing', matched: /testing|junit|qa|coverage/i.test(resumeText), importance: 'Medium' },
+      ];
+      companyStrengths = [
+        `Strong match for ${companyDisplayName}'s enterprise consulting and software delivery standards.`,
+        'Versatile technical stack suitable for client migration and modernization projects.',
+      ];
+      companyWeaknesses = [
+        `Highlight formal certifications and client-facing delivery milestones valued at ${companyDisplayName}.`,
+        'Could include more references to code quality standards, unit test coverage, and documentation.',
+      ];
+      recommendedProjectsAndCertifications = [
+        {
+          type: 'certification',
+          title: 'AWS Certified Developer / Azure Developer Associate',
+          description: `Industry-recognized credential giving top priority during ${companyDisplayName} client deployment allocation.`,
+          expectedImpact: `Direct fast-track for enterprise consulting accounts at ${companyDisplayName}.`,
+        },
+        {
+          type: 'project',
+          title: 'Legacy-to-Cloud Microservices Migration',
+          description: 'Document an end-to-end monolithic decomposition into cloud-native microservices with Docker and CI/CD.',
+          expectedImpact: `Primary engagement type for senior engineers at ${companyDisplayName}.`,
+        },
+      ];
+      improvementSuggestions = [
+        'Highlight experience in client requirements gathering, sprint demos, and cross-timezone team coordination.',
+        'Add quantitative metrics on project timelines (e.g., "Delivered migration 3 weeks ahead of schedule").',
+        'Clearly enumerate industry certifications and educational background at the top of the resume.',
+      ];
+      scoreModifier = /enterprise|client|agile|java|cloud/i.test(resumeText) ? 3 : -1;
+    } else {
+      // Custom Company Evaluation
+      expectedSkills = [
+        { name: 'Core Technical Stack for ' + rawCompany, category: 'Core Tech', importance: 'Core Expectation' },
+        { name: 'Modern Architecture & System Design', category: 'Architecture', importance: 'Core Expectation' },
+        { name: 'Cloud Infrastructure & DevOps', category: 'Cloud', importance: 'Preferred' },
+        { name: 'Cross-Functional Collaboration', category: 'Soft Skills', importance: 'Core Expectation' },
+        { name: 'Continuous Delivery & Automated Testing', category: 'DevOps', importance: 'Preferred' },
+      ];
+      importantKeywords = [
+        { keyword: 'Impact & Metrics', matched: /increased|reduced|improved|revenue|speed/i.test(resumeText), importance: 'High' },
+        { keyword: 'Engineering Leadership', matched: /lead|spearhead|mentored|architecture/i.test(resumeText), importance: 'High' },
+        { keyword: 'Modern Tech Stack', matched: /react|typescript|node|python|cloud|docker/i.test(resumeText), importance: 'High' },
+        { keyword: 'Scalability', matched: /scale|scalable|throughput/i.test(resumeText), importance: 'Medium' },
+      ];
+      companyStrengths = [
+        `Strong technical foundation that matches modern expectations at ${rawCompany}.`,
+        'Clear demonstration of engineering execution and quantified impact.',
+      ];
+      companyWeaknesses = [
+        `Customize your resume summary to reference ${rawCompany}'s mission, products, and core technology stack.`,
+        'Verify that your most relevant accomplishments match the specific department priorities.',
+      ];
+      recommendedProjectsAndCertifications = [
+        {
+          type: 'project',
+          title: `Showcase Project tailored to ${rawCompany}'s Core Product`,
+          description: `Build a prototype or system directly relevant to ${rawCompany}'s primary technical challenges.`,
+          expectedImpact: `Demonstrates genuine passion and immediate Day-1 domain competence for ${rawCompany}.`,
+        },
+        {
+          type: 'skill',
+          title: 'Domain-Specific Architecture Deep-Dive',
+          description: `Research ${rawCompany}'s public tech blog and engineering whitepapers to mirror their terminology.`,
+          expectedImpact: 'Ensures high scoring in both ATS and initial hiring manager screens.',
+        },
+      ];
+      improvementSuggestions = [
+        `Tailor the resume headline specifically to ${rawCompany}'s open position title.`,
+        `Adopt keywords from ${rawCompany}'s recent technical job postings.`,
+        'Ensure measurable metrics in all bullet points to prove high ROI.',
+      ];
+      scoreModifier = 0;
+    }
+
+    // Match present vs missing skills
+    const detectedSkillNames = skillsDetected.map((s) => s.name.toLowerCase());
+    const presentSkills: string[] = [];
+    const missingSkills: CompanySpecificAnalysis['missingSkills'] = [];
+
+    for (const exp of expectedSkills) {
+      const expLower = exp.name.toLowerCase();
+      const isPresent =
+        detectedSkillNames.some((ds) => expLower.includes(ds) || ds.includes(expLower)) ||
+        new RegExp(`\\b${exp.name.split(' ')[0]}\\b`, 'i').test(resumeText);
+
+      if (isPresent) {
+        presentSkills.push(exp.name);
+      } else {
+        missingSkills.push({
+          name: exp.name,
+          priority: exp.importance === 'Core Expectation' ? 'Critical' : 'High',
+          recommendation: `Add verifiable experience or side-project demonstration with ${exp.name} to meet ${rawCompany}'s hiring bar.`,
+        });
+      }
+    }
+
+    // Calculate company score
+    const baseScore = overallScore;
+    const skillsRatio = expectedSkills.length > 0 ? presentSkills.length / expectedSkills.length : 0.8;
+    const computedCompanyScore = Math.min(
+      99,
+      Math.max(45, Math.round(baseScore * 0.7 + skillsRatio * 30 + scoreModifier))
+    );
+
+    // Selection readiness
+    let selectionReadinessLevel: CompanySpecificAnalysis['selectionReadinessLevel'] = 'Needs Targeted Work';
+    if (computedCompanyScore >= 87) {
+      selectionReadinessLevel = 'Interview Ready';
+    } else if (computedCompanyScore >= 76) {
+      selectionReadinessLevel = 'Highly Competitive';
+    } else if (computedCompanyScore >= 62) {
+      selectionReadinessLevel = 'Moderate Match';
+    }
+
+    companyAnalysis = {
+      companyName: rawCompany,
+      companyScore: computedCompanyScore,
+      selectionReadinessLevel,
+      expectedSkills,
+      presentSkills,
+      missingSkills,
+      importantKeywords,
+      companyStrengths,
+      companyWeaknesses,
+      recommendedProjectsAndCertifications,
+      improvementSuggestions,
+    };
+  }
+
   return {
     id: 'local-analysis-' + Date.now(),
     fileInfo: {
@@ -381,6 +739,7 @@ export function generateLocalAtsAnalysis(params: GenerateLocalAtsParams): Compre
     formattingIssues,
     contentSuggestions,
     keywordSuggestions,
+    companyAnalysis,
     isFallback: true,
     engineNotice: 'Analyzed with Enterprise ATS Engine (Gemini AI temporarily experiencing high demand).',
   };

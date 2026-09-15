@@ -34,6 +34,7 @@ export const PrintableAnalysisReport: React.FC<PrintableAnalysisReportProps> = (
     formattingIssues = [],
     contentSuggestions = [],
     keywordSuggestions = [],
+    companyAnalysis,
   } = analysis;
 
   const currentDate = new Date().toLocaleDateString('en-US', {
@@ -86,9 +87,58 @@ export const PrintableAnalysisReport: React.FC<PrintableAnalysisReportProps> = (
             <div className="text-sm font-bold text-indigo-900 mt-0.5">
               {targetRole || 'Software Professional'}
             </div>
+            {companyAnalysis && (
+              <div className="text-[11px] font-semibold text-indigo-700 mt-0.5">
+                Target Company: {companyAnalysis.companyName} ({companyAnalysis.companyScore}/100)
+              </div>
+            )}
           </div>
         </div>
       </div>
+
+      {/* Optional Company-Specific Audit Section in Print */}
+      {companyAnalysis && (
+        <div className="print-avoid-break mb-6 border border-indigo-200 rounded-lg p-4 bg-indigo-50/20">
+          <div className="flex items-center justify-between pb-2 mb-3 border-b border-indigo-200">
+            <div>
+              <span className="text-xs uppercase font-extrabold text-indigo-950 tracking-wider">
+                Target Company Analysis: {companyAnalysis.companyName}
+              </span>
+              <p className="text-[11px] text-slate-600">
+                Tailored benchmark against {companyAnalysis.companyName}'s hiring rubrics
+              </p>
+            </div>
+            <div className="text-right">
+              <span className="text-2xl font-black text-indigo-700">{companyAnalysis.companyScore}</span>
+              <span className="text-xs text-slate-500 font-medium"> / 100</span>
+              <div className="text-[10px] font-bold text-emerald-700">{companyAnalysis.selectionReadinessLevel}</div>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-3 text-[11px]">
+            <div>
+              <span className="font-bold text-slate-800 block mb-1">Missing / High-Priority Skills:</span>
+              <ul className="list-disc pl-4 space-y-0.5 text-slate-700">
+                {companyAnalysis.missingSkills.map((m, i) => (
+                  <li key={i}>
+                    <strong>{m.name}</strong> ({m.priority} Priority) - {m.recommendation}
+                  </li>
+                ))}
+              </ul>
+            </div>
+            <div>
+              <span className="font-bold text-slate-800 block mb-1">Recommended Projects / Certifications:</span>
+              <ul className="list-disc pl-4 space-y-0.5 text-slate-700">
+                {companyAnalysis.recommendedProjectsAndCertifications.map((r, i) => (
+                  <li key={i}>
+                    <strong>{r.title}</strong>: {r.description}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* 2 & 3. Overall Score & ATS Compatibility Section */}
       <div className="print-avoid-break mb-6">

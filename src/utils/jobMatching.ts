@@ -16,70 +16,67 @@ export interface PresetJobItem {
 
 export const PRESET_JOB_DESCRIPTIONS: PresetJobItem[] = [
   {
-    id: 'preset-stripe-swe',
-    title: 'Staff Full Stack Engineer (Core Payments)',
-    company: 'Stripe',
-    description: `Staff Full Stack Engineer - Core Payments Architecture
-Stripe is seeking an experienced Staff Full Stack Engineer to lead technical design across distributed payment checkout workflows and mission-critical payment rails.
+    id: 'preset-google-swe',
+    title: 'Senior Software Engineer (Cloud Infrastructure & Distributed Systems)',
+    company: 'Google',
+    description: `Senior Software Engineer - Google Cloud & Distributed Systems
+Google is seeking a Senior Software Engineer to design, scale, and maintain massive distributed infrastructure.
 
 Key Responsibilities:
-- Architect high-throughput distributed systems using React, TypeScript, Node.js, and PostgreSQL.
-- Build low-latency microservices handling millions of transactions with 99.999% uptime.
-- Implement containerized deployments and CI/CD pipelines using Docker, Kubernetes, and AWS infrastructure.
-- Optimize frontend Core Web Vitals, checkout bundle sizes, and state machines with modern testing (Jest, Playwright).
-- Partner with security teams to ensure strict PCI-DSS and SOC2 compliance.
-- Mentor senior engineers and drive cross-functional engineering standards.
+- Design fault-tolerant, planetary-scale distributed microservices using Go, C++, or Java.
+- Optimize high-throughput data processing systems using Bigtable, Spanner, and Google Cloud Platform (GCP).
+- Implement robust telemetry, tracing, and automated failure recovery across Kubernetes (GKE) clusters.
+- Collaborate with Site Reliability Engineers (SRE) to ensure 99.999% global service availability.
+- Drive engineering excellence, code reviews, and system architecture design docs (RFCs).
 
 Qualifications:
-- 6+ years of production experience with TypeScript, React, and distributed backend systems (Node.js, Go, or Java).
-- Hands-on expertise with relational databases (PostgreSQL), Redis caching, and message queues (Kafka).
-- Deep experience in cloud infrastructure (AWS or GCP), Docker, and Kubernetes.
-- Bachelor's or Master's degree in Computer Science, Software Engineering, or equivalent practical experience.`,
+- 5+ years of software development experience in distributed systems, network services, or cloud platforms.
+- Strong proficiency in algorithms, data structures, concurrency, and performance profiling.
+- Deep hands-on experience with Linux internals, container orchestration (Kubernetes/Docker), and cloud architecture.
+- BS/MS in Computer Science, Software Engineering, or equivalent practical experience.`,
   },
   {
-    id: 'preset-datadog-pm',
-    title: 'Lead Technical Product Manager (Telemetry & APM)',
-    company: 'Datadog',
-    description: `Lead Technical Product Manager - Telemetry & APM Platform
-Datadog is hiring a Lead Technical Product Manager to scale our application performance monitoring (APM) and developer observability suite.
+    id: 'preset-microsoft-fullstack',
+    title: 'Senior Full Stack Engineer (Azure & Web Platforms)',
+    company: 'Microsoft',
+    description: `Senior Full Stack Engineer - Azure Developer Platform
+Microsoft Azure is looking for a Senior Full Stack Engineer to build enterprise-grade developer portals and cloud workflow experiences.
 
 Key Responsibilities:
-- Define product strategy, write detailed PRDs, and guide sprint backlogs for observability engineers.
-- Drive quantitative user behavior analysis and funnel conversion metrics using SQL, Mixpanel, and Amplitude.
-- Champion Product-Led Growth (PLG), self-serve developer activation, and feature telemetry.
-- Partner with customer engineering and enterprise clients to translate observability needs into product specifications.
+- Build responsive, accessible web portals using React, TypeScript, and Microsoft Fluent UI.
+- Develop scalable backend microservices and REST/gRPC APIs using .NET Core / C# and Node.js.
+- Integrate Azure Cosmos DB, Azure DevOps CI/CD pipelines, and OAuth security protocols.
+- Mentor junior engineers, drive technical specifications, and champion automated testing (Jest, Playwright).
 
 Qualifications:
-- 5+ years in technical product management for B2B SaaS, cloud infrastructure, or developer tools.
-- Proficiency in SQL queries, data visualization (Tableau, Looker), and Agile / Scrum execution.
-- Strong technical fluency in distributed systems, APIs, and cloud architectures.
-- Bachelor's degree in Computer Science, Information Systems, or business-related field.`,
+- 5+ years building production full-stack web applications.
+- Strong proficiency in modern TypeScript, React, C# or Node.js, and Azure cloud services.
+- Experience with microservice architectures, RESTful APIs, and relational/NoSQL databases.`,
   },
   {
-    id: 'preset-nexus-devops',
-    title: 'Senior DevOps & Platform Engineer',
-    company: 'Nexus Cloud Infrastructure',
-    description: `Senior DevOps & Platform Engineer
-Join our infrastructure platform team to build automated, secure, and resilient cloud architectures for enterprise applications.
+    id: 'preset-amazon-sde',
+    title: 'Software Development Engineer II (AWS Core Services)',
+    company: 'Amazon',
+    description: `Software Development Engineer II (SDE II) - AWS Core Services
+AWS is looking for an experienced SDE II to build the backbone of next-generation cloud compute and storage services.
 
 Key Responsibilities:
-- Automate infrastructure as code (IaC) using Terraform and AWS CloudFormation.
-- Manage and scale multi-tenant Kubernetes clusters (EKS), service meshes (Istio), and GitOps CI/CD pipelines.
-- Implement comprehensive telemetry, logging, and synthetic monitoring using Prometheus, Grafana, and Datadog.
-- Enforce IAM least-privilege security policies, secrets rotation, and automated vulnerability scanning.
+- Design and implement highly reliable, low-latency distributed systems using Java, Python, and AWS services (DynamoDB, S3, SQS, Lambda).
+- Apply Amazon Leadership Principles (Customer Obsession, Ownership, Bias for Action) to deliver customer-facing features.
+- Define automated CI/CD pipelines, unit/integration testing suites, and operational dashboards (CloudWatch).
+- Participate in on-call rotation to diagnose production issues and maintain world-class operational metrics.
 
 Qualifications:
-- 4+ years dedicated DevOps, SRE, or cloud infrastructure platform experience.
-- Deep expertise in AWS, Linux internals, Docker, Kubernetes, and Terraform.
-- Scripting fluency in Python, Bash, or Go.
-- Proven track record maintaining 99.99% service availability.`,
+- 3+ years of non-internship professional software engineering experience.
+- Strong command of computer science fundamentals: object-oriented design, data structures, and algorithms.
+- Experience with scalable backend systems, asynchronous messaging, and AWS architecture.`,
   },
   {
     id: 'preset-meta-frontend',
     title: 'Senior Frontend Architect (Design Systems & Web)',
-    company: 'Meta / NextGen Labs',
+    company: 'Meta',
     description: `Senior Frontend Architect - Design Systems & Web Performance
-We are looking for a Senior Frontend Architect to champion web excellence, design systems, and frontend architecture across high-traffic web applications.
+Meta is looking for a Senior Frontend Engineer to champion web excellence, design systems, and frontend architecture across high-traffic web applications.
 
 Key Responsibilities:
 - Lead the architecture and implementation of scalable component design systems using React, TypeScript, and Tailwind CSS.
@@ -91,6 +88,78 @@ Qualifications:
 - 5+ years of dedicated web frontend engineering with TypeScript, modern React, and design system governance.
 - Demonstrated experience auditing and optimizing web performance metrics at scale.
 - Familiarity with accessibility standards (WCAG 2.1 AA) and responsive layouts across viewports.`,
+  },
+  {
+    id: 'preset-infosys-cloud',
+    title: 'Lead Consultant / Full Stack Architect',
+    company: 'Infosys',
+    description: `Lead Consultant - Cloud Migration & Full Stack Transformation
+Infosys is hiring a Lead Consultant to lead digital transformation initiatives for Fortune 500 enterprise clients.
+
+Key Responsibilities:
+- Lead enterprise cloud migration projects migrating legacy on-prem workloads to AWS / Azure cloud environments.
+- Architect modern microservices using Java Spring Boot, Node.js, and React.
+- Build CI/CD pipelines with Jenkins, GitHub Actions, and containerized Docker/Kubernetes deployments.
+- Manage client stakeholder communication, delivery roadmaps, and cross-shore technical teams.
+
+Qualifications:
+- 7+ years in enterprise IT, software architecture, and full-stack software delivery.
+- Expertise in Java/Spring Boot, Angular/React, microservices, and relational databases (Oracle/PostgreSQL).
+- Certifications in AWS Solutions Architect or Azure Solutions Architect preferred.`,
+  },
+  {
+    id: 'preset-tcs-architect',
+    title: 'Technical Architect (Enterprise Cloud Delivery)',
+    company: 'TCS',
+    description: `Technical Architect - Enterprise Cloud & Modernization
+Tata Consultancy Services (TCS) is seeking a Technical Architect to drive mission-critical enterprise engineering programs.
+
+Key Responsibilities:
+- Design scalable multi-tier architectures for global banking and retail clients.
+- Implement API gateways, message brokers (Kafka/RabbitMQ), and secure OAuth/SAML single sign-on flows.
+- Lead Agile sprint execution, code audits, and security vulnerability reviews.
+- Mentor technical leads and collaborate with enterprise delivery managers on SLA adherence.
+
+Qualifications:
+- 8+ years experience in enterprise software development and system architecture.
+- Strong knowledge of microservices, cloud infrastructure (AWS/Azure/GCP), and distributed data stores.
+- Excellent client-facing communication and architectural governance skills.`,
+  },
+  {
+    id: 'preset-wipro-digital',
+    title: 'Senior Digital Solutions Engineer',
+    company: 'Wipro',
+    description: `Senior Digital Solutions Engineer - Cloud & DevOps Practice
+Wipro is seeking a Senior Digital Solutions Engineer to accelerate cloud-native transformation for global clients.
+
+Key Responsibilities:
+- Build modern cloud-native web applications using TypeScript, React, and Node.js.
+- Implement automated Terraform infrastructure as code (IaC) and Docker/Kubernetes deployments.
+- Configure enterprise monitoring, log aggregation (ELK, Prometheus), and automated testing.
+- Partner with business teams to translate functional requirements into scalable technical deliverables.
+
+Qualifications:
+- 5+ years in full-stack engineering and cloud deployment.
+- Experience with React, Node.js/Python, Docker, Kubernetes, and cloud platforms (AWS or Azure).
+- Proven ability to deliver under Agile/Scrum delivery models.`,
+  },
+  {
+    id: 'preset-accenture-tech',
+    title: 'Technology Consulting Senior Analyst',
+    company: 'Accenture',
+    description: `Technology Consulting Senior Analyst - Cloud First & Custom Engineering
+Accenture is looking for a Technology Consulting Senior Analyst to deliver cutting-edge technology strategies and cloud architectures.
+
+Key Responsibilities:
+- Deliver high-impact digital products for enterprise clients across financial services, healthcare, and retail.
+- Develop cloud-first solutions utilizing AWS/GCP, serverless architectures, and modern web frameworks.
+- Present architecture trade-offs, feasibility studies, and digital transformation roadmaps to C-level executives.
+- Participate in technology hackathons, cross-functional delivery pods, and agile sprints.
+
+Qualifications:
+- 4+ years of hands-on software development or technical consulting experience.
+- Strong proficiency in modern programming languages (TypeScript, Java, Python) and cloud fundamentals.
+- Strong analytical, problem-solving, and communication skills.`,
   },
 ];
 

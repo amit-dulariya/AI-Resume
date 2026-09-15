@@ -31,9 +31,31 @@ import { ScoreBadge } from '../components/common/ScoreBadge';
 import { mockResumes, mockTemplates } from '../data/mockData';
 import { timeAgo } from '../utils/formatters';
 import { Resume } from '../types/resume';
+import {
+  getUserResumesFromFirestore,
+  saveResumeToFirestore,
+  deleteResumeFromFirestore,
+} from '../lib/firestoreService';
+import { useAuth } from '../context/AuthContext';
 
 export const DashboardPage: React.FC = () => {
-  const [resumes, setResumes] = useState<Resume[]>(mockResumes);
+  const { user } = useAuth();
+  const [resumes, setResumes] = useState<Resume[]>(() => {
+    if (user) {
+      return mockResumes.map((r) => ({
+        ...r,
+        content: {
+          ...r.content,
+          personalInfo: {
+            ...r.content.personalInfo,
+            fullName: user.name || (user.email ? user.email.split('@')[0] : 'Your Name'),
+            email: user.email || 'user@example.com',
+          },
+        },
+      }));
+    }
+    return mockResumes;
+  });
   const [searchQuery, setSearchQuery] = useState('');
   const [filterTab, setFilterTab] = useState<'all' | 'high-score' | 'draft'>('all');
   const [activeMenuId, setActiveMenuId] = useState<string | null>(null);
@@ -47,6 +69,42 @@ export const DashboardPage: React.FC = () => {
   const [newTemplateId, setNewTemplateId] = useState('tpl-modern');
 
   const navigate = useNavigate();
+
+  const userDisplayName = user?.name || (user?.email ? user.email.split('@')[0] : 'User');
+  const userFirstName = user?.name ? user.name.trim().split(' ')[0] : (user?.email ? user.email.split('@')[0] : 'there');
+
+  // Load resumes from Firestore
+  React.useEffect(() => {
+    async function loadUserResumes() {
+      if (user?.id) {
+        try {
+          const fsResumes = await getUserResumesFromFirestore(user.id);
+          if (fsResumes.length > 0) {
+            setResumes(fsResumes);
+            setSelectedResumeId(fsResumes[0].id);
+          } else {
+            // Personalize template resumes for new users with their actual name and email
+            const starterResumes = mockResumes.map((r) => ({
+              ...r,
+              content: {
+                ...r.content,
+                personalInfo: {
+                  ...r.content.personalInfo,
+                  fullName: user.name || (user.email ? user.email.split('@')[0] : 'Your Name'),
+                  email: user.email || 'user@example.com',
+                },
+              },
+            }));
+            setResumes(starterResumes);
+            setSelectedResumeId(starterResumes[0]?.id || 'res-1');
+          }
+        } catch (err) {
+          console.warn('Could not load user resumes from Firestore:', err);
+        }
+      }
+    }
+    loadUserResumes();
+  }, [user?.id, user?.name, user?.email]);
 
   const showToast = (msg: string) => {
     setToastMessage(msg);
@@ -62,7 +120,7 @@ export const DashboardPage: React.FC = () => {
   };
 
   // Duplicate resume handler
-  const handleDuplicate = (id: string) => {
+  const handleDuplicate = async (id: string) => {
     const target = resumes.find((r) => r.id === id);
     if (!target) return;
     const duplicated: Resume = {
@@ -73,14 +131,24 @@ export const DashboardPage: React.FC = () => {
       createdAt: new Date().toISOString(),
       status: 'draft',
     };
+    if (user?.id) {
+      saveResumeToFirestore(duplicated, user.id).catch((err) => {
+        console.warn('Firestore duplicate notice:', err);
+      });
+    }
     setResumes([duplicated, ...resumes]);
     setActiveMenuId(null);
     showToast(`Duplicated "${target.title}" successfully.`);
   };
 
   // Delete resume handler
-  const handleDelete = (id: string) => {
+  const handleDelete = async (id: string) => {
     const target = resumes.find((r) => r.id === id);
+    if (user?.id) {
+      deleteResumeFromFirestore(id, user.id).catch((err) => {
+        console.warn('Firestore delete notice:', err);
+      });
+    }
     const updated = resumes.filter((r) => r.id !== id);
     setResumes(updated);
     setActiveMenuId(null);
@@ -107,7 +175,7 @@ export const DashboardPage: React.FC = () => {
   };
 
   // Handle Create New Resume
-  const handleCreateResume = (e: React.FormEvent) => {
+  const handleCreateResume = async (e: React.FormEvent) => {
     e.preventDefault();
     const newResume: Resume = {
       id: `res-${Date.now()}`,
@@ -121,11 +189,11 @@ export const DashboardPage: React.FC = () => {
       pageCount: 1,
       content: {
         personalInfo: {
-          fullName: 'Alexander Wright',
+          fullName: user?.name || (user?.email ? user.email.split('@')[0] : 'User'),
           jobTitle: newTargetRole.trim() || 'Software Engineer',
-          email: 'alex.wright@example.com',
-          phone: '+1 (555) 349-2910',
-          location: 'San Francisco, CA',
+          email: user?.email || '',
+          phone: '',
+          location: '',
           summary: 'Dedicated professional with a strong track record of high-impact delivery.',
           socialLinks: [],
         },
@@ -138,6 +206,12 @@ export const DashboardPage: React.FC = () => {
         languages: [],
       },
     };
+
+    if (user?.id) {
+      saveResumeToFirestore(newResume, user.id).catch((err) => {
+        console.warn('Firestore create resume notice:', err);
+      });
+    }
 
     setResumes([newResume, ...resumes]);
     setIsCreateModalOpen(false);
@@ -255,7 +329,7 @@ export const DashboardPage: React.FC = () => {
               <span>AI Career Readiness Hub</span>
             </div>
             <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
-              Welcome back, Alexander!
+              Welcome back, {userFirstName}!
             </h2>
             <p className="text-sm text-slate-600 mt-2 leading-relaxed">
               Your active resumes are tracking at an average <strong className="text-slate-800 font-semibold">{avgScore}% ATS score</strong>. 

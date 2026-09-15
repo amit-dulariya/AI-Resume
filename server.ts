@@ -38,9 +38,8 @@ function getAI(): GoogleGenAI {
 }
 
 // ATS Structured Schema for Gemini Output
-const atsAnalysisSchema = {
-  type: Type.OBJECT,
-  properties: {
+function getAtsAnalysisSchema(hasCompany: boolean) {
+  const baseProperties: any = {
     targetRole: { type: Type.STRING },
     overallScore: { type: Type.INTEGER },
     overallVerdict: {
@@ -196,8 +195,9 @@ const atsAnalysisSchema = {
         ],
       },
     },
-  },
-  required: [
+  };
+
+  const requiredFields = [
     'targetRole',
     'overallScore',
     'overallVerdict',
@@ -210,11 +210,107 @@ const atsAnalysisSchema = {
     'formattingIssues',
     'contentSuggestions',
     'keywordSuggestions',
-  ],
-};
+  ];
+
+  if (hasCompany) {
+    baseProperties.companyAnalysis = {
+      type: Type.OBJECT,
+      properties: {
+        companyName: { type: Type.STRING },
+        companyScore: { type: Type.INTEGER },
+        selectionReadinessLevel: { type: Type.STRING },
+        expectedSkills: {
+          type: Type.ARRAY,
+          items: {
+            type: Type.OBJECT,
+            properties: {
+              name: { type: Type.STRING },
+              category: { type: Type.STRING },
+              importance: { type: Type.STRING },
+            },
+            required: ['name', 'category', 'importance'],
+          },
+        },
+        presentSkills: {
+          type: Type.ARRAY,
+          items: { type: Type.STRING },
+        },
+        missingSkills: {
+          type: Type.ARRAY,
+          items: {
+            type: Type.OBJECT,
+            properties: {
+              name: { type: Type.STRING },
+              priority: { type: Type.STRING },
+              recommendation: { type: Type.STRING },
+            },
+            required: ['name', 'priority', 'recommendation'],
+          },
+        },
+        importantKeywords: {
+          type: Type.ARRAY,
+          items: {
+            type: Type.OBJECT,
+            properties: {
+              keyword: { type: Type.STRING },
+              matched: { type: Type.BOOLEAN },
+              importance: { type: Type.STRING },
+            },
+            required: ['keyword', 'matched', 'importance'],
+          },
+        },
+        companyStrengths: {
+          type: Type.ARRAY,
+          items: { type: Type.STRING },
+        },
+        companyWeaknesses: {
+          type: Type.ARRAY,
+          items: { type: Type.STRING },
+        },
+        recommendedProjectsAndCertifications: {
+          type: Type.ARRAY,
+          items: {
+            type: Type.OBJECT,
+            properties: {
+              type: { type: Type.STRING },
+              title: { type: Type.STRING },
+              description: { type: Type.STRING },
+              expectedImpact: { type: Type.STRING },
+            },
+            required: ['type', 'title', 'description', 'expectedImpact'],
+          },
+        },
+        improvementSuggestions: {
+          type: Type.ARRAY,
+          items: { type: Type.STRING },
+        },
+      },
+      required: [
+        'companyName',
+        'companyScore',
+        'selectionReadinessLevel',
+        'expectedSkills',
+        'presentSkills',
+        'missingSkills',
+        'importantKeywords',
+        'companyStrengths',
+        'companyWeaknesses',
+        'recommendedProjectsAndCertifications',
+        'improvementSuggestions',
+      ],
+    };
+    requiredFields.push('companyAnalysis');
+  }
+
+  return {
+    type: Type.OBJECT,
+    properties: baseProperties,
+    required: requiredFields,
+  };
+}
 
 // Helper to execute Gemini generateContent with multi-model retry and backoff
-async function generateAtsAnalysis(ai: GoogleGenAI, contents: any): Promise<string> {
+async function generateAtsAnalysis(ai: GoogleGenAI, contents: any, schema: any): Promise<string> {
   // Use gemini-3.1-flash-lite as primary high-availability model, followed by gemini-3.8-flash fallback
   const candidateModels = ['gemini-3.1-flash-lite', 'gemini-3.8-flash'];
   let lastErr: any = null;
@@ -227,7 +323,7 @@ async function generateAtsAnalysis(ai: GoogleGenAI, contents: any): Promise<stri
           contents,
           config: {
             responseMimeType: 'application/json',
-            responseSchema: atsAnalysisSchema,
+            responseSchema: schema,
           },
         });
 
@@ -273,7 +369,7 @@ app.get('/api/health', (req, res) => {
 
 // Real Gemini AI Resume Analysis Endpoint with Enterprise ATS Engine fallback
 app.post('/api/analyze-resume', async (req, res) => {
-  const { fileName, resumeText, resumeBase64, targetRole } = req.body;
+  const { fileName, resumeText, resumeBase64, targetRole, companyName } = req.body;
 
   // Validate inputs
   const hasText = typeof resumeText === 'string' && resumeText.trim().length >= 30;
@@ -286,10 +382,12 @@ app.post('/api/analyze-resume', async (req, res) => {
     });
   }
 
+  const hasCompany = Boolean(companyName && typeof companyName === 'string' && companyName.trim().length > 0);
+
   try {
     const ai = getAI();
 
-    const systemPrompt = `You are a world-class Applicant Tracking System (ATS) evaluator and executive technical talent scout.
+    let systemPrompt = `You are a world-class Applicant Tracking System (ATS) evaluator and executive technical talent scout.
 Analyze the candidate's resume objectively according to modern enterprise ATS engines (Workday, Taleo, Greenhouse, Lever) and real-world hiring criteria.
 Evaluate the resume for:
 1. Overall Resume Score (0-100), performance grade, candidate percentile rank, and crisp verdict summary.
@@ -302,8 +400,24 @@ Evaluate the resume for:
 8. Content Improvement Suggestions: 3-4 concrete bullet point rewrites transforming passive tasks into high-impact metric achievements with before/after comparisons.
 9. Important Keywords: 8-12 vital ATS search keywords with match status (true/false), search importance, frequency, and recommended section placement.`;
 
+    if (hasCompany) {
+      systemPrompt += `\n10. Specialized Company-Specific Analysis for ${companyName}:
+Provide a tailored evaluation for ${companyName}:
+- Company-specific Resume Score (0–100) based on ${companyName}'s hiring bar and culture
+- Estimated selection-readiness level ('Interview Ready', 'Highly Competitive', 'Moderate Match', or 'Needs Targeted Work')
+- Expected skills for ${companyName} and the candidate's role
+- Skills already present in the resume
+- Missing/high-priority skills with actionable recommendations
+- Important keywords with match status and importance
+- Resume strengths for ${companyName}
+- Resume weaknesses for ${companyName}
+- Recommended projects/certifications/skills tailored for ${companyName}
+- Resume improvement suggestions tailored for ${companyName}`;
+    }
+
     const userPrompt = `Target Role / Filename: ${fileName || targetRole || 'Software Professional'}
 ${targetRole ? `Desired Job Target: ${targetRole}\n` : ''}
+${hasCompany ? `Target Company: ${companyName}\n` : ''}
 ${hasText ? `Resume Content:\n${resumeText.slice(0, 15000)}` : ''}`;
 
     let contentsPayload: any;
@@ -327,7 +441,8 @@ ${hasText ? `Resume Content:\n${resumeText.slice(0, 15000)}` : ''}`;
 
     let parsed: any = null;
     try {
-      const rawText = await generateAtsAnalysis(ai, contentsPayload);
+      const schema = getAtsAnalysisSchema(hasCompany);
+      const rawText = await generateAtsAnalysis(ai, contentsPayload, schema);
       parsed = JSON.parse(rawText);
     } catch {
       // Graceful fallback to Enterprise ATS Engine if models are at capacity
@@ -335,6 +450,7 @@ ${hasText ? `Resume Content:\n${resumeText.slice(0, 15000)}` : ''}`;
         fileName,
         resumeText: hasText ? resumeText : (targetRole || 'Software Professional Resume'),
         targetRole,
+        companyName: hasCompany ? companyName : undefined,
         fileSize: req.body.fileSize,
         formattedSize: req.body.formattedSize,
       });

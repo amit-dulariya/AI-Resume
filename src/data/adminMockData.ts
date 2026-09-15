@@ -109,8 +109,8 @@ export const initialAdminStats: AdminStat[] = [
 export const initialAdminActivities: AdminActivity[] = [
   {
     id: 'act-1',
-    user: 'Alexander Wright',
-    userEmail: 'alex.wright@example.com',
+    user: 'Alex Morgan',
+    userEmail: 'alex.morgan@example.com',
     action: 'ran ATS Score Analyzer on',
     target: 'Senior Full Stack Engineer Resume (92%)',
     timeAgo: '4 mins ago',
@@ -172,8 +172,8 @@ export const initialAdminActivities: AdminActivity[] = [
 export const initialAdminUsers: AdminUserRecord[] = [
   {
     id: 'usr-1',
-    name: 'Alexander Wright',
-    email: 'alex.wright@example.com',
+    name: 'Alex Morgan',
+    email: 'alex.morgan@example.com',
     role: 'user',
     status: 'Active',
     plan: 'Pro',
@@ -272,8 +272,8 @@ export const initialAdminResumes: AdminResumeRecord[] = [
   {
     id: 'res-1',
     title: 'Senior Full Stack Engineer Resume',
-    ownerName: 'Alexander Wright',
-    ownerEmail: 'alex.wright@example.com',
+    ownerName: 'Alex Morgan',
+    ownerEmail: 'alex.morgan@example.com',
     targetRole: 'Staff / Senior Software Engineer',
     templateName: 'Modern',
     atsScore: 92,
@@ -314,8 +314,8 @@ export const initialAdminResumes: AdminResumeRecord[] = [
   {
     id: 'res-4',
     title: 'Cloud Infrastructure & SRE Specialist',
-    ownerName: 'Alexander Wright',
-    ownerEmail: 'alex.wright@example.com',
+    ownerName: 'Alex Morgan',
+    ownerEmail: 'alex.morgan@example.com',
     targetRole: 'Site Reliability Engineer',
     templateName: 'Minimal',
     atsScore: 78,

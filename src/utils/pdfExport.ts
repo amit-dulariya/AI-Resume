@@ -15,7 +15,7 @@ export interface ExportPdfResult {
 
 /**
  * Formats a clean, professional filename for the exported resume.
- * e.g. "Alexander_Wright_Resume.pdf" or "My_Resume.pdf"
+ * e.g. "Candidate_Resume.pdf" or "My_Resume.pdf"
  */
 export function getResumePdfFilename(resume?: Resume): string {
   const name = resume?.content?.personalInfo?.fullName?.trim();

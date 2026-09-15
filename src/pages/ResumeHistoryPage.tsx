@@ -44,19 +44,28 @@ import {
   calculateResumeCompletion,
   getTemplateDisplayName,
 } from '../utils/resumeHistory';
+import {
+  getUserResumesFromFirestore,
+  getUserAnalysesFromFirestore,
+  deleteResumeFromFirestore,
+  saveResumeToFirestore,
+} from '../lib/firestoreService';
+import { getStoredUser } from '../utils/auth';
 import { mockTemplates } from '../data/mockData';
 import { timeAgo, formatDate } from '../utils/formatters';
 import { Resume } from '../types/resume';
 
 export const ResumeHistoryPage: React.FC = () => {
   const navigate = useNavigate();
+  const user = getStoredUser();
 
   // Active Tab: 'resumes' | 'analysis'
   const [activeTab, setActiveTab] = useState<'resumes' | 'analysis'>('resumes');
 
-  // Resumes list state (loaded from localStorage + mock)
+  // Resumes list state (loaded from Firestore with local fallback)
   const [resumes, setResumes] = useState<ResumeWithStats[]>([]);
   const [analysisHistory, setAnalysisHistory] = useState<AnalysisHistoryItem[]>([]);
+  const [isLoadingData, setIsLoadingData] = useState(false);
 
   // Search & Filter state
   const [searchQuery, setSearchQuery] = useState('');
@@ -81,14 +90,46 @@ export const ResumeHistoryPage: React.FC = () => {
     setTimeout(() => setToastMessage(null), 3500);
   };
 
-  // Initial load
+  // Initial load from Firestore
   useEffect(() => {
-    const loadedResumes = loadSavedResumes();
-    setResumes(loadedResumes);
+    async function loadData() {
+      setIsLoadingData(true);
+      const localResumes = loadSavedResumes();
+      const localAnalyses = loadAnalysisHistory();
 
-    const loadedAnalyses = loadAnalysisHistory();
-    setAnalysisHistory(loadedAnalyses);
-  }, []);
+      if (user?.id) {
+        try {
+          const [firestoreResumes, firestoreAnalyses] = await Promise.all([
+            getUserResumesFromFirestore(user.id),
+            getUserAnalysesFromFirestore(user.id),
+          ]);
+
+          if (firestoreResumes.length > 0) {
+            setResumes(firestoreResumes);
+          } else {
+            setResumes(localResumes);
+          }
+
+          if (firestoreAnalyses.length > 0) {
+            setAnalysisHistory(firestoreAnalyses);
+          } else {
+            setAnalysisHistory(localAnalyses);
+          }
+        } catch (err) {
+          console.warn('Firestore load notice, using local cache:', err);
+          setResumes(localResumes);
+          setAnalysisHistory(localAnalyses);
+        } finally {
+          setIsLoadingData(false);
+        }
+      } else {
+        setResumes(localResumes);
+        setAnalysisHistory(localAnalyses);
+        setIsLoadingData(false);
+      }
+    }
+    loadData();
+  }, [user?.id]);
 
   // Filtered and sorted resumes
   const filteredResumes = filterAndSortResumes(
@@ -99,13 +140,21 @@ export const ResumeHistoryPage: React.FC = () => {
   );
 
   // Duplicate handler
-  const handleDuplicate = (target: ResumeWithStats) => {
+  const handleDuplicate = async (target: ResumeWithStats) => {
     const cloned = duplicateResume(target);
     const withStats: ResumeWithStats = {
       ...cloned,
       completionPercentage: calculateResumeCompletion(cloned),
       templateName: getTemplateDisplayName(cloned.templateId),
     };
+
+    if (user?.id) {
+      try {
+        await saveResumeToFirestore(cloned, user.id);
+      } catch (err) {
+        console.warn('Firestore duplicate save note:', err);
+      }
+    }
 
     const updated = [withStats, ...resumes];
     setResumes(updated);
@@ -119,17 +168,22 @@ export const ResumeHistoryPage: React.FC = () => {
   };
 
   // Confirm delete
-  const handleConfirmDelete = (resumeId: string) => {
+  const handleConfirmDelete = async (resumeId: string) => {
     setIsDeleting(true);
-    setTimeout(() => {
-      const updated = resumes.filter((r) => r.id !== resumeId);
-      setResumes(updated);
-      saveResumesList(updated);
-      deleteResumeStorage(resumeId);
-      setIsDeleting(false);
-      setDeleteTargetResume(null);
-      showToast('Resume deleted successfully.', 'info');
-    }, 300);
+    try {
+      if (user?.id) {
+        await deleteResumeFromFirestore(resumeId, user.id);
+      }
+    } catch (err) {
+      console.warn('Firestore delete note:', err);
+    }
+    const updated = resumes.filter((r) => r.id !== resumeId);
+    setResumes(updated);
+    saveResumesList(updated);
+    deleteResumeStorage(resumeId);
+    setIsDeleting(false);
+    setDeleteTargetResume(null);
+    showToast('Resume deleted successfully.', 'info');
   };
 
   // Download PDF handler

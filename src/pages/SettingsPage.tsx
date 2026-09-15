@@ -1,14 +1,30 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { User, Bell, Palette, Shield, Save, Check } from 'lucide-react';
 import { Card, CardHeader, CardBody, CardFooter } from '../components/common/Card';
 import { Input } from '../components/common/Input';
 import { Button } from '../components/common/Button';
 import { mockUserSettings, mockTemplates } from '../data/mockData';
 import { UserSettings } from '../types/resume';
+import { useAuth } from '../context/AuthContext';
 
 export const SettingsPage: React.FC = () => {
-  const [settings, setSettings] = useState<UserSettings>(mockUserSettings);
+  const { user } = useAuth();
+  const [settings, setSettings] = useState<UserSettings>(() => ({
+    ...mockUserSettings,
+    name: user?.name || (user?.email ? user.email.split('@')[0] : 'User'),
+    email: user?.email || '',
+  }));
   const [saved, setSaved] = useState(false);
+
+  useEffect(() => {
+    if (user) {
+      setSettings((prev) => ({
+        ...prev,
+        name: user.name || (user.email ? user.email.split('@')[0] : prev.name),
+        email: user.email || prev.email,
+      }));
+    }
+  }, [user?.name, user?.email]);
 
   const handleSave = (e: React.FormEvent) => {
     e.preventDefault();

@@ -15,8 +15,8 @@ import {
   X,
   Clock,
 } from 'lucide-react';
-import { mockUserSettings, mockResumes } from '../../data/mockData';
-import { logout } from '../../utils/auth';
+import { mockResumes } from '../../data/mockData';
+import { useAuth } from '../../context/AuthContext';
 
 interface NavbarProps {
   onToggleMobileSidebar: () => void;
@@ -29,6 +29,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   title,
   subtitle,
 }) => {
+  const { user, logout } = useAuth();
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
@@ -36,6 +37,11 @@ export const Navbar: React.FC<NavbarProps> = ({
   const [unreadCount, setUnreadCount] = useState(2);
   const searchInputRef = useRef<HTMLInputElement>(null);
   const navigate = useNavigate();
+
+  const userDisplayName = user?.name || (user?.email ? user.email.split('@')[0] : 'User');
+  const userEmail = user?.email || '';
+  const userFirstName = userDisplayName.split(' ')[0] || userDisplayName;
+  const userInitial = (userDisplayName.charAt(0) || userEmail.charAt(0) || 'U').toUpperCase();
 
   const notifications = [
     {
@@ -363,12 +369,22 @@ export const Navbar: React.FC<NavbarProps> = ({
               setShowNotifications(false);
             }}
             className="flex items-center gap-2 p-1.5 rounded-lg hover:bg-slate-100 transition-colors focus:outline-none cursor-pointer"
+            title={userDisplayName}
           >
-            <div className="w-7 h-7 rounded-full bg-slate-900 text-white flex items-center justify-center text-xs font-bold ring-2 ring-slate-200">
-              {mockUserSettings.name.charAt(0)}
-            </div>
-            <span className="text-sm font-medium text-slate-700 hidden md:inline-block">
-              {mockUserSettings.name.split(' ')[0]}
+            {user?.photoURL ? (
+              <img
+                src={user.photoURL}
+                alt={userDisplayName}
+                referrerPolicy="no-referrer"
+                className="w-7 h-7 rounded-full object-cover ring-2 ring-slate-200"
+              />
+            ) : (
+              <div className="w-7 h-7 rounded-full bg-slate-900 text-white flex items-center justify-center text-xs font-bold ring-2 ring-slate-200">
+                {userInitial}
+              </div>
+            )}
+            <span className="text-sm font-medium text-slate-700 hidden md:inline-block max-w-[120px] truncate">
+              {userFirstName}
             </span>
           </button>
 
@@ -378,13 +394,29 @@ export const Navbar: React.FC<NavbarProps> = ({
                 className="fixed inset-0 z-20"
                 onClick={() => setShowProfileMenu(false)}
               />
-              <div className="absolute right-0 mt-2 w-56 bg-white rounded-xl shadow-xl border border-slate-200 py-1.5 z-30 divide-y divide-slate-100">
+              <div className="absolute right-0 mt-2 w-60 bg-white rounded-xl shadow-xl border border-slate-200 py-1.5 z-30 divide-y divide-slate-100">
                 <div className="px-4 py-2.5">
-                  <p className="text-xs font-semibold text-slate-900">{mockUserSettings.name}</p>
-                  <p className="text-[11px] text-slate-500 truncate">{mockUserSettings.email}</p>
-                  <div className="mt-1.5 inline-flex items-center gap-1 text-[10px] font-bold text-indigo-700 bg-indigo-50 px-1.5 py-0.5 rounded">
+                  <div className="flex items-center gap-2.5 mb-2">
+                    {user?.photoURL ? (
+                      <img
+                        src={user.photoURL}
+                        alt={userDisplayName}
+                        referrerPolicy="no-referrer"
+                        className="w-8 h-8 rounded-full object-cover ring-1 ring-slate-200"
+                      />
+                    ) : (
+                      <div className="w-8 h-8 rounded-full bg-indigo-600 text-white flex items-center justify-center text-xs font-bold ring-1 ring-slate-200">
+                        {userInitial}
+                      </div>
+                    )}
+                    <div className="min-w-0 flex-1">
+                      <p className="text-xs font-semibold text-slate-900 truncate">{userDisplayName}</p>
+                      <p className="text-[11px] text-slate-500 truncate">{userEmail || 'No email attached'}</p>
+                    </div>
+                  </div>
+                  <div className="inline-flex items-center gap-1 text-[10px] font-bold text-indigo-700 bg-indigo-50 px-2 py-0.5 rounded border border-indigo-100">
                     <Sparkles className="w-2.5 h-2.5" />
-                    <span>Pro Member</span>
+                    <span>{user?.role === 'admin' ? 'Administrator' : 'Standard Member'}</span>
                   </div>
                 </div>
 
@@ -413,9 +445,9 @@ export const Navbar: React.FC<NavbarProps> = ({
 
                 <div className="py-1">
                   <button
-                    onClick={() => {
-                      logout();
+                    onClick={async () => {
                       setShowProfileMenu(false);
+                      await logout();
                       navigate('/login');
                     }}
                     className="w-full flex items-center gap-2.5 px-4 py-2 text-xs text-rose-600 hover:bg-rose-50"

@@ -74,6 +74,45 @@ export interface KeywordSuggestionItem {
   tip: string;
 }
 
+export interface CompanyExpectedSkill {
+  name: string;
+  category: string;
+  importance: 'Core Expectation' | 'Preferred' | 'Bonus';
+}
+
+export interface CompanyMissingSkill {
+  name: string;
+  priority: 'Critical' | 'High' | 'Medium';
+  recommendation: string;
+}
+
+export interface CompanyKeyword {
+  keyword: string;
+  matched: boolean;
+  importance: 'High' | 'Medium';
+}
+
+export interface CompanyRecommendationItem {
+  type: 'project' | 'certification' | 'skill';
+  title: string;
+  description: string;
+  expectedImpact: string;
+}
+
+export interface CompanySpecificAnalysis {
+  companyName: string;
+  companyScore: number;
+  selectionReadinessLevel: 'Interview Ready' | 'Highly Competitive' | 'Moderate Match' | 'Needs Targeted Work';
+  expectedSkills: CompanyExpectedSkill[];
+  presentSkills: string[];
+  missingSkills: CompanyMissingSkill[];
+  importantKeywords: CompanyKeyword[];
+  companyStrengths: string[];
+  companyWeaknesses: string[];
+  recommendedProjectsAndCertifications: CompanyRecommendationItem[];
+  improvementSuggestions: string[];
+}
+
 export interface ComprehensiveAnalysisResult {
   id: string;
   fileInfo: UploadedFileInfo;
@@ -101,6 +140,7 @@ export interface ComprehensiveAnalysisResult {
   formattingIssues: FormattingCheckItem[];
   contentSuggestions: ContentImprovementSuggestion[];
   keywordSuggestions: KeywordSuggestionItem[];
+  companyAnalysis?: CompanySpecificAnalysis;
   isFallback?: boolean;
   engineNotice?: string;
 }

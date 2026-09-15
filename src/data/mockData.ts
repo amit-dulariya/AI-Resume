@@ -60,17 +60,17 @@ export const mockResumes: Resume[] = [
     pageCount: 1,
     content: {
       personalInfo: {
-        fullName: 'Alexander Wright',
+        fullName: 'Alex Morgan',
         jobTitle: 'Senior Full Stack Engineer',
-        email: 'alex.wright@example.com',
+        email: 'alex.morgan@example.com',
         phone: '+1 (555) 349-2910',
         location: 'San Francisco, CA (Open to Remote)',
-        website: 'https://alexwright.dev',
+        website: 'https://alexmorgan.dev',
         summary:
           'High-impact software engineer with 7+ years architecting distributed web platforms, high-throughput APIs, and modern frontend systems. Proven track record reducing latency by 45% and leading cross-functional squads to scale products to 2M+ active users.',
         socialLinks: [
-          { id: 's1', platform: 'LinkedIn', url: 'https://linkedin.com/in/alex-wright' },
-          { id: 's2', platform: 'GitHub', url: 'https://github.com/alexwright' },
+          { id: 's1', platform: 'LinkedIn', url: 'https://linkedin.com/in/alex-morgan' },
+          { id: 's2', platform: 'GitHub', url: 'https://github.com/alexmorgan' },
         ],
       },
       experience: [
@@ -192,14 +192,14 @@ export const mockResumes: Resume[] = [
     pageCount: 1,
     content: {
       personalInfo: {
-        fullName: 'Alexander Wright',
+        fullName: 'Alex Morgan',
         jobTitle: 'Technical Product Manager',
-        email: 'alex.wright@example.com',
+        email: 'alex.morgan@example.com',
         phone: '+1 (555) 349-2910',
         location: 'San Francisco, CA',
         summary:
           'Product leader with engineering background bridging complex systems and user experience. Driven 3.2x self-serve revenue growth through experimental onboarding funnels and data-backed monetization strategies.',
-        socialLinks: [{ id: 's1', platform: 'LinkedIn', url: 'https://linkedin.com/in/alex-wright' }],
+        socialLinks: [{ id: 's1', platform: 'LinkedIn', url: 'https://linkedin.com/in/alex-morgan' }],
       },
       experience: [
         {
@@ -255,9 +255,9 @@ export const mockResumes: Resume[] = [
     pageCount: 2,
     content: {
       personalInfo: {
-        fullName: 'Alexander Wright',
+        fullName: 'Alex Morgan',
         jobTitle: 'Strategy & Operations Consultant',
-        email: 'alex.wright@example.com',
+        email: 'alex.morgan@example.com',
         phone: '+1 (555) 349-2910',
         location: 'San Francisco, CA',
         summary:
@@ -373,8 +373,8 @@ export const mockJobMatches: JobMatchAnalysis[] = [
 ];
 
 export const mockUserSettings: UserSettings = {
-  name: 'Alexander Wright',
-  email: 'alex.wright@example.com',
+  name: 'User',
+  email: 'user@example.com',
   defaultTemplateId: 'tpl-modern',
   targetIndustry: 'Technology & Cloud Infrastructure',
   experienceLevel: 'Senior',

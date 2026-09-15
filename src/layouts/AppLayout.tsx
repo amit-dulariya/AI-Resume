@@ -1,9 +1,12 @@
 import React, { useState } from 'react';
-import { Outlet, useLocation } from 'react-router-dom';
+import { Outlet, useLocation, Navigate } from 'react-router-dom';
 import { Sidebar } from '../components/navigation/Sidebar';
 import { Navbar } from '../components/navigation/Navbar';
+import { useAuth } from '../context/AuthContext';
+import { Sparkles } from 'lucide-react';
 
 export const AppLayout: React.FC = () => {
+  const { user, isLoading } = useAuth();
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const location = useLocation();
 
@@ -19,6 +22,28 @@ export const AppLayout: React.FC = () => {
   };
 
   const meta = getPageMeta(location.pathname);
+
+  // Prevent flashing demo data while Firebase Auth restores the session
+  if (isLoading) {
+    return (
+      <div className="flex h-screen w-full items-center justify-center bg-slate-50">
+        <div className="flex flex-col items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-indigo-600 text-white flex items-center justify-center shadow-md animate-pulse">
+            <Sparkles className="w-5 h-5 text-white" />
+          </div>
+          <div className="flex items-center gap-2 text-slate-500 text-sm font-medium">
+            <div className="w-4 h-4 border-2 border-indigo-600 border-t-transparent rounded-full animate-spin" />
+            <span>Loading workspace...</span>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Redirect unauthenticated visitors to login
+  if (!user) {
+    return <Navigate to="/login" state={{ from: location.pathname }} replace />;
+  }
 
   return (
     <div className="flex h-screen bg-slate-50 text-slate-900 overflow-hidden print:h-auto print:overflow-visible print:bg-white">

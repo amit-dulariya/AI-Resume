@@ -17,6 +17,7 @@ import {
   RefreshCw,
   XCircle,
   Zap,
+  Building2,
 } from 'lucide-react';
 import { Card } from '../components/common/Card';
 import { Button } from '../components/common/Button';
@@ -25,6 +26,8 @@ import {
   ComprehensiveAnalysisResult,
 } from '../data/analyzerMockData';
 import { generateLocalAtsAnalysis } from '../utils/localAtsEngine';
+import { saveAnalysisToFirestore } from '../lib/firestoreService';
+import { getStoredUser } from '../utils/auth';
 
 // Subcomponents for the modular AI Resume Analyzer
 import { PDFUploadDropzone } from '../components/analyzer/PDFUploadDropzone';
@@ -35,9 +38,12 @@ import { FormattingAuditSection } from '../components/analyzer/FormattingAuditSe
 import { ContentSuggestionsSection } from '../components/analyzer/ContentSuggestionsSection';
 import { KeywordSuggestionsSection } from '../components/analyzer/KeywordSuggestionsSection';
 import { PrintableAnalysisReport } from '../components/analyzer/PrintableAnalysisReport';
+import { CompanySelector } from '../components/analyzer/CompanySelector';
+import { CompanyAnalysisDashboard } from '../components/analyzer/CompanyAnalysisDashboard';
 
 type ActiveSectionTab =
   | 'all'
+  | 'company'
   | 'scores'
   | 'skills'
   | 'strengths_weaknesses'
@@ -47,6 +53,7 @@ type ActiveSectionTab =
 
 export const ResumeAnalyzerPage: React.FC = () => {
   const [stagedFile, setStagedFile] = useState<UploadedFileInfo | null>(null);
+  const [selectedCompany, setSelectedCompany] = useState<string>('Google');
   const [analysisResult, setAnalysisResult] = useState<ComprehensiveAnalysisResult | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [analysisStep, setAnalysisStep] = useState(1);
@@ -98,6 +105,7 @@ export const ResumeAnalyzerPage: React.FC = () => {
           formattedSize: stagedFile.formattedSize,
           resumeText: stagedFile.extractedText || '',
           resumeBase64: stagedFile.base64 || '',
+          companyName: selectedCompany || undefined,
         }),
       });
 
@@ -108,6 +116,22 @@ export const ResumeAnalyzerPage: React.FC = () => {
       }
 
       setAnalysisResult(data as ComprehensiveAnalysisResult);
+
+      // Save structured analysis to Firestore resumeAnalyses collection
+      const user = getStoredUser();
+      if (user?.id) {
+        saveAnalysisToFirestore({
+          userId: user.id,
+          resumeId: `res-${Date.now()}`,
+          resumeName: stagedFile.name.replace(/\.[^/.]+$/, ''),
+          companyName: selectedCompany || 'General ATS Scan',
+          targetRole: (data as ComprehensiveAnalysisResult).targetRole || 'Target Candidate Profile',
+          analysisResult: data as ComprehensiveAnalysisResult,
+          scanType: selectedCompany ? 'Company Specific' : 'ATS Scan',
+        }).catch((saveErr) => {
+          console.warn('Could not save analysis to Firestore:', saveErr);
+        });
+      }
     } catch (err: any) {
       console.error('Gemini Analysis Failed:', err);
       setError(
@@ -130,10 +154,26 @@ export const ResumeAnalyzerPage: React.FC = () => {
     const result = generateLocalAtsAnalysis({
       fileName: stagedFile.name,
       resumeText: stagedFile.extractedText || '',
+      companyName: selectedCompany || undefined,
       fileSize: stagedFile.size,
       formattedSize: stagedFile.formattedSize,
     });
     setAnalysisResult(result);
+
+    const user = getStoredUser();
+    if (user?.id) {
+      saveAnalysisToFirestore({
+        userId: user.id,
+        resumeId: `res-${Date.now()}`,
+        resumeName: stagedFile.name.replace(/\.[^/.]+$/, ''),
+        companyName: selectedCompany || 'Local ATS Diagnostic',
+        targetRole: result.targetRole || 'Target Candidate Profile',
+        analysisResult: result,
+        scanType: selectedCompany ? 'Company Specific' : 'ATS Scan',
+      }).catch((saveErr) => {
+        console.warn('Could not save local analysis to Firestore:', saveErr);
+      });
+    }
   };
 
   const getStepLabel = (step: number) => {
@@ -271,13 +311,19 @@ export const ResumeAnalyzerPage: React.FC = () => {
 
       {/* STATE 1: Empty / Upload State */}
       {!analysisResult && !isAnalyzing && (
-        <PDFUploadDropzone
-          stagedFile={stagedFile}
-          onSelectFile={handleSelectFile}
-          onClearFile={handleClearFile}
-          onAnalyze={handleAnalyzeResume}
-          isAnalyzing={isAnalyzing}
-        />
+        <div className="space-y-4">
+          <CompanySelector
+            selectedCompany={selectedCompany}
+            onSelectCompany={setSelectedCompany}
+          />
+          <PDFUploadDropzone
+            stagedFile={stagedFile}
+            onSelectFile={handleSelectFile}
+            onClearFile={handleClearFile}
+            onAnalyze={handleAnalyzeResume}
+            isAnalyzing={isAnalyzing}
+          />
+        </div>
       )}
 
       {/* STATE 2: Loading / Analysis State */}
@@ -369,7 +415,16 @@ export const ResumeAnalyzerPage: React.FC = () => {
             </div>
 
             <div className="flex items-center gap-2 text-xs">
-              <span className="text-slate-500">Detected Role Target:</span>
+              {analysisResult.companyAnalysis && (
+                <div className="flex items-center gap-1.5 bg-indigo-50 border border-indigo-200 text-indigo-800 px-2.5 py-1 rounded-md font-semibold">
+                  <Building2 className="w-3.5 h-3.5 text-indigo-600" />
+                  <span>{analysisResult.companyAnalysis.companyName}</span>
+                  <span className="bg-indigo-600 text-white text-[10px] px-1.5 py-0.2 rounded font-bold">
+                    {analysisResult.companyAnalysis.companyScore}%
+                  </span>
+                </div>
+              )}
+              <span className="text-slate-500">Detected Role:</span>
               <span className="font-bold text-slate-800 bg-slate-100 px-2.5 py-1 rounded-md">
                 {analysisResult.targetRole}
               </span>
@@ -415,6 +470,20 @@ export const ResumeAnalyzerPage: React.FC = () => {
               <Layout className="w-3.5 h-3.5" />
               All Sections
             </button>
+            {analysisResult.companyAnalysis && (
+              <button
+                type="button"
+                onClick={() => setActiveSection('company')}
+                className={`px-3 py-1.5 text-xs rounded-lg font-semibold whitespace-nowrap transition-colors flex items-center gap-1.5 ${
+                  activeSection === 'company'
+                    ? 'bg-indigo-600 text-white shadow-2xs'
+                    : 'text-indigo-700 bg-indigo-50/80 hover:bg-indigo-100/90 border border-indigo-200/70'
+                }`}
+              >
+                <Building2 className="w-3.5 h-3.5" />
+                {analysisResult.companyAnalysis.companyName} Fit ({analysisResult.companyAnalysis.companyScore}/100)
+              </button>
+            )}
             <button
               type="button"
               onClick={() => setActiveSection('scores')}
@@ -488,6 +557,14 @@ export const ResumeAnalyzerPage: React.FC = () => {
               Keywords ({analysisResult.keywordSuggestions?.length || 0})
             </button>
           </div>
+
+          {/* Company-Specific Analysis Dashboard */}
+          {analysisResult.companyAnalysis && (activeSection === 'all' || activeSection === 'company') && (
+            <CompanyAnalysisDashboard
+              companyAnalysis={analysisResult.companyAnalysis}
+              targetRole={analysisResult.targetRole}
+            />
+          )}
 
           {/* 1 & 2: Overall Resume Score & ATS Compatibility Score */}
           {(activeSection === 'all' || activeSection === 'scores') && (
